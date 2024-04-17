@@ -1,16 +1,62 @@
 <script setup lang="ts">
 import { ref, watch, reactive } from 'vue'
 import _ from 'lodash'
+import moment from 'moment'
 import { useUserStore, useOrderStore } from '@/stores/index'
 const title = '订单管理'
 const userStore = useUserStore()
 const orderStore = useOrderStore()
+interface Order {
+  id: number
+  main_type: number
+  price: string
+  num: number
+  buyer_name: string
+  product_type: string
+  order_code: string
+  picture_id: number
+  real_product_url: string
+  status: string
+  product_name: string
+  asin: string
+  sku: string
+  buyer_selection: string
+  is_business: number
+  publish_time: Date
+  role: number
+  publisher: string
+  mark_str: string
+  template_file: string
+  show: number
+  click_count: number
+  seo_title: string
+  seo_keyword: string
+  seo_description: string
+  static_page_model: number
+}
+interface Dict {
+  id: number
+  label: string
+  value: number
+  type?: number
+  description?: string
+}
+//字典显示格式转换
+const dictFormat = (value: number, dictList: Dict[]) => {
+  let label = ''
+  dictList.forEach((item) => {
+    if (item.value === value) {
+      label = item.label
+    }
+  })
+  return label
+}
 
 //批量按钮操作----------------------------
 //添加按钮todo
 const addItem = () => {
   //获取用户的历史输入
-  const order = ref(orderStore.getOrder(userStore.user.uid))
+  const order = ref(orderStore.getOrder(userStore.user.id))
   if (order.value) {
     addFormObj.value = order.value
   }
@@ -61,19 +107,37 @@ const dialogVisible = ref(false)
 //todo添加订单页面关闭前的统一操作
 const handleClose = (done: () => void) => {
   //保存用户输入
-  orderStore.setOrder(userStore.user.uid, _.cloneDeep(addFormObj.value))
+  orderStore.setOrder(userStore.user.id, _.cloneDeep(addFormObj.value))
 
   done()
 }
 const addFormObj = ref<Order>({
   id: 0,
-  name: '',
-  status: false,
-  account: '',
-  phone: '',
-  email: '',
-  role: '',
-  date: ''
+  main_type: 0,
+  price: '',
+  num: 0,
+  buyer_name: '',
+  product_type: '',
+  order_code: '',
+  picture_id: 0,
+  real_product_url: '',
+  status: '',
+  product_name: '',
+  asin: '',
+  sku: '',
+  buyer_selection: '',
+  is_business: 0,
+  publish_time: new Date(),
+  role: 0,
+  publisher: '',
+  mark_str: '',
+  template_file: '',
+  show: 0,
+  click_count: 0,
+  seo_title: '',
+  seo_keyword: '',
+  seo_description: '',
+  static_page_model: 0
 })
 const addFormRef = ref<FormInstance>()
 
@@ -109,56 +173,147 @@ const addForm = (formEl: FormInstance | undefined) => {
 }
 
 //table表格----------------------------------------------
-interface Order {
-  id: number
-  name: string
-  status: boolean
-  account: string
-  phone: string
-  email: string
-  role: string
-  date: string
-}
+
 const tableData = ref<Order[]>([
   {
     id: 1,
-    name: '张三',
-    status: true,
-    account: '123456789',
-    phone: '13812345678',
-    email: '12345678@qq.com',
-    role: '管理员',
-    date: '2023-03-21'
+    main_type: 1,
+    price: '100',
+    num: 10,
+    buyer_name: '张三',
+    product_type: '电子产品',
+    order_code: '123456789',
+    picture_id: 1,
+    real_product_url: 'https://www.baidu.com',
+    status: '待发货',
+    product_name: '手机',
+    asin: '123456789',
+    sku: '123456789',
+    buyer_selection: '黑色',
+    is_business: 1,
+    publish_time: new Date(),
+    role: 1,
+    publisher: '张三',
+    mark_str: '备注信息',
+    template_file: '模板文件',
+    show: 1,
+    click_count: 100,
+    seo_title: 'SEO标题',
+    seo_keyword: 'SEO关键词',
+    seo_description: 'SEO描述',
+    static_page_model: 1
   },
   {
     id: 2,
-    name: '李四',
-    status: false,
-    account: '987654321',
-    phone: '13898765432',
-    email: '987654321@qq.com',
-    role: '普通用户',
-    date: '2023-03-22'
+    main_type: 1,
+    price: '100',
+    num: 10,
+    buyer_name: '张三',
+    product_type: '电子产品',
+    order_code: '123456789',
+    picture_id: 1,
+    real_product_url: 'https://www.baidu.com',
+    status: '待发货',
+    product_name: '手机',
+    asin: '123456789',
+    sku: '123456789',
+    buyer_selection: '黑色',
+    is_business: 1,
+    publish_time: new Date(),
+    role: 1,
+    publisher: '张三',
+    mark_str: '备注信息',
+    template_file: '模板文件',
+    show: 1,
+    click_count: 100,
+    seo_title: 'SEO标题',
+    seo_keyword: 'SEO关键词',
+    seo_description: 'SEO描述',
+    static_page_model: 1
   },
   {
     id: 3,
-    name: '王五',
-    status: true,
-    account: '123456789',
-    phone: '13812345678',
-    email: '12345678@qq.com',
-    role: '管理员',
-    date: '2023-03-23'
+    main_type: 1,
+    price: '100',
+    num: 10,
+    buyer_name: '张三',
+    product_type: '电子产品',
+    order_code: '123456789',
+    picture_id: 1,
+    real_product_url: 'https://www.baidu.com',
+    status: '待发货',
+    product_name: '手机',
+    asin: '123456789',
+    sku: '123456789',
+    buyer_selection: '黑色',
+    is_business: 1,
+    publish_time: new Date(),
+    role: 1,
+    publisher: '张三',
+    mark_str: '备注信息',
+    template_file: '模板文件',
+    show: 1,
+    click_count: 100,
+    seo_title: 'SEO标题',
+    seo_keyword: 'SEO关键词',
+    seo_description: 'SEO描述',
+    static_page_model: 1
   },
   {
     id: 4,
-    name: '赵六',
-    status: false,
-    account: '987654321',
-    phone: '13898765432',
-    email: '987654321@qq.com',
-    role: '普通用户',
-    date: '2023-03-24'
+    main_type: 1,
+    price: '100',
+    num: 10,
+    buyer_name: '张三',
+    product_type: '电子产品',
+    order_code: '123456789',
+    picture_id: 1,
+    real_product_url: 'https://www.baidu.com',
+    status: '待发货',
+    product_name: '手机',
+    asin: '123456789',
+    sku: '123456789',
+    buyer_selection: '黑色',
+    is_business: 1,
+    publish_time: new Date(),
+    role: 1,
+    publisher: '张三',
+    mark_str: '备注信息',
+    template_file: '模板文件',
+    show: 1,
+    click_count: 100,
+    seo_title: 'SEO标题',
+    seo_keyword: 'SEO关键词',
+    seo_description: 'SEO描述',
+    static_page_model: 1
+  },
+  {
+    id: 5,
+    main_type: 1,
+    price: '100',
+    num: 10,
+    buyer_name: '张三',
+    product_type: '电子产品',
+    order_code: '123456789',
+    picture_id: 1,
+    real_product_url: 'https://www.baidu.com',
+    status: '待发货',
+    product_name: '手机',
+    asin: '123456789',
+    sku: '123456789',
+    buyer_selection: '黑色',
+    is_business: 1,
+    publish_time: new Date(),
+    role: 1,
+    publisher: '张三',
+    mark_str: '备注信息',
+    template_file: '模板文件',
+    show: 1,
+    click_count: 100,
+    seo_title: 'SEO标题',
+    seo_keyword: 'SEO关键词',
+    seo_description: 'SEO描述',
+    static_page_model: 1
   }
 ])
 //查看按钮操作
@@ -171,7 +326,7 @@ const editItem = (row: Order) => {
 }
 //删除按钮操作todo
 const delItem = (row: Order) => {
-  const Ordername = row.name
+  const Ordername = row.product_name
   //弹出确认框
   ElMessageBox.confirm(
     '即将删除订单[' + Ordername + ']，是否继续？',
@@ -223,13 +378,31 @@ const drawerVisible = ref(false)
 const drawerTitle = ref('')
 const formObj = ref<Order>({
   id: 0,
-  name: '',
-  status: false,
-  account: '',
-  phone: '',
-  email: '',
-  role: '',
-  date: ''
+  main_type: 0,
+  price: '',
+  num: 0,
+  buyer_name: '',
+  product_type: '',
+  order_code: '',
+  picture_id: 0,
+  real_product_url: '',
+  status: '',
+  product_name: '',
+  asin: '',
+  sku: '',
+  buyer_selection: '',
+  is_business: 0,
+  publish_time: new Date(),
+  role: 0,
+  publisher: '',
+  mark_str: '',
+  template_file: '',
+  show: 0,
+  click_count: 0,
+  seo_title: '',
+  seo_keyword: '',
+  seo_description: '',
+  static_page_model: 0
 })
 //抽屉内容标记 0->查看  1 ->编辑   2 ->新增
 const drawFlag = ref(0)
@@ -248,19 +421,11 @@ const toggleDrawer = (row: Order, flag: number = 0, title: string) => {
 import { type FormInstance, type FormRules } from 'element-plus'
 
 const formRef = ref<FormInstance>()
-
+//todo  rule规则
 const rules = reactive<FormRules<Order>>({
-  name: [
+  product_name: [
     { required: true, message: '请输入订单名', trigger: 'blur' },
     { min: 1, message: '订单名不能为空', trigger: 'blur' }
-  ],
-  phone: [
-    { required: true, message: '请输入手机号', trigger: 'blur' },
-    { min: 11, max: 11, message: '手机号格式错误', trigger: 'blur' }
-  ],
-  email: [
-    { required: true, message: '请输入邮箱', trigger: 'blur' },
-    { min: 1, message: '邮箱不能为空', trigger: 'blur' }
   ]
 })
 
@@ -308,52 +473,167 @@ const searchCondition = ref({
   c3: '',
   flag: 0
 })
-const options1 = [
+const options1: Dict[] = [
   {
-    value: '选项1',
-    label: '黄金糕'
+    id: 0,
+    label: '全部',
+    value: 0
   },
   {
-    value: '选项2',
-    label: '双皮奶'
+    id: 1,
+    label: '待审核',
+    value: 1
   },
   {
-    value: '选项3',
-    label: '蚵仔煎'
+    id: 2,
+    label: '已审核',
+    value: 2
   }
 ]
-const options2 = [
+const options2: Dict[] = [
   {
-    value: '选项1',
-    label: '黄金糕22222'
+    id: 0,
+    label: '全部',
+    value: 0
   },
   {
-    value: '选项2',
-    label: '双皮奶222'
+    id: 1,
+    label: '待发货',
+    value: 1
   },
   {
-    value: '选项3',
-    label: '蚵仔煎222222'
+    id: 2,
+    label: '已发货',
+    value: 2
   }
 ]
-const options3 = [
+const options3: Dict[] = [
   {
-    value: 0,
-    label: '买家姓名'
+    id: 0,
+    label: '买家姓名',
+    value: 0
   },
   {
-    value: 1,
-    label: '品类'
+    id: 1,
+    label: '品类',
+    value: 1
   }
 ]
 const search = () => {
-  //发送请求 获取指定条件的table数据 todo
+  //发送请求 重新获取table数据 todo
 }
 
 //订单状态切换 todo
 const statusChange = (status: boolean = false, id: number = 0) => {
   console.log(status, id)
 }
+//查看图片dialog  预览/查看 -----------------------------------------------------------------------------------------
+//预览/查看图片
+const imgDialogVisibel = ref(false)
+let productImgUrl =
+  'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
+const viewImg = (imgUrl: string) => {
+  productImgUrl = imgUrl
+  //打开dialog
+  imgDialogVisibel.value = true
+}
+//上传图片dialog ------------------------------------------------------------------------------
+//上传图片按钮点击事件
+const uploadDialogVisibel = ref(false)
+const openUploadDialog = () => {
+  //  打开 上传图片dialog
+  uploadDialogVisibel.value = true
+}
+
+//todo 发送请求获取多个dict
+//主分类
+const main_type_dict: Dict[] = [
+  {
+    id: 0,
+    label: '分类1',
+    value: 1
+  },
+  {
+    id: 1,
+    label: '分类2',
+    value: 2
+  }
+]
+//是否企业买家
+const is_business_dict: Dict[] = [
+  {
+    id: 0,
+    label: '个人买家',
+    value: 0
+  },
+  {
+    id: 1,
+    label: '企业买家',
+    value: 1
+  }
+]
+//角色
+const role_dict: Dict[] = [
+  {
+    id: 0,
+    label: '普通用户',
+    value: 0
+  },
+  {
+    id: 1,
+    label: '管理员',
+    value: 1
+  }
+]
+//是否显示
+const show_dict: Dict[] = [
+  {
+    id: 0,
+    label: '不显示',
+    value: 0
+  },
+  {
+    id: 1,
+    label: '显示',
+    value: 1
+  }
+]
+//是否静态化
+const static_page_model_dict: Dict[] = [
+  {
+    id: 0,
+    label: '动态',
+    value: 0
+  },
+  {
+    id: 1,
+    label: '静态',
+    value: 1
+  }
+]
+//日期选择器
+const shortcuts = [
+  {
+    text: '今天',
+    value: new Date()
+  },
+  {
+    text: '昨天',
+    value: () => {
+      const date = new Date()
+      date.setDate(date.getDate() - 1)
+      return date
+    }
+  },
+  {
+    text: '一周前',
+    value: () => {
+      const date = new Date()
+      date.setDate(date.getDate() - 7)
+      return date
+    }
+  }
+]
 </script>
 
 <template>
@@ -443,10 +723,8 @@ const statusChange = (status: boolean = false, id: number = 0) => {
           :index="indexMethod"
           width="80"
         />
-        <el-table-column label="Date">
-          <template #default="scope">{{ scope.row.date }}</template>
-        </el-table-column>
-        <el-table-column label="status">
+
+        <el-table-column label="状态">
           <template #default="scope">
             <el-switch
               v-model="scope.row.status"
@@ -454,12 +732,25 @@ const statusChange = (status: boolean = false, id: number = 0) => {
             />
           </template>
         </el-table-column>
-        <el-table-column property="name" label="Name" />
-        <el-table-column
-          property="address"
-          label="Address"
-          show-overflow-tooltip
-        />
+        <el-table-column property="main_type" label="主分类" />
+
+        <el-table-column label="买家姓名">
+          <template #default="scope"
+            >{{ scope.row.buyer_name }}
+            <el-button type="text" @click="viewImg('imgUrltodo')"
+              >查看图片</el-button
+            ></template
+          >
+        </el-table-column>
+        <el-table-column property="price" label="售价" />
+        <el-table-column property="product_type" label="品类" />
+
+        <el-table-column label="发布时间" show-overflow-tooltip>
+          <template #default="scope">{{
+            moment(scope.row.publish_time).format('YYYY-MM-DD HH:mm:ss')
+          }}</template>
+        </el-table-column>
+
         <el-table-column label="操作" width="240" min-width="240"
           ><template #default="scope">
             <el-button type="success" @click="viewItem(scope.row)"
@@ -495,47 +786,251 @@ const statusChange = (status: boolean = false, id: number = 0) => {
     :title="drawerTitle"
     destroy-on-close="true"
   >
+    <!--查看订单信息  -->
     <template v-if="drawFlag === 0">
-      <el-descriptions :title="formObj.name" border :column="1" size="large">
-        <el-descriptions-item label="p1">{{
-          formObj.account
+      <el-descriptions
+        :title="formObj.product_name"
+        border
+        :column="1"
+        size="large"
+      >
+        <el-descriptions-item label="商品名称">{{
+          formObj.product_name
         }}</el-descriptions-item>
-        <el-descriptions-item label="p2">{{
-          formObj.phone
+        <el-descriptions-item label="图片"
+          ><el-button type="text" @click="viewImg('imgUrltodo')"
+            >查看图片</el-button
+          >
+        </el-descriptions-item>
+        <el-descriptions-item label="主分类"
+          >{{ formObj.main_type }}
+          <!--  todo 格式转换 dictFormat(value,dictList) -->
+        </el-descriptions-item>
+        <el-descriptions-item label="价格">{{
+          formObj.price
         }}</el-descriptions-item>
-        <el-descriptions-item label="p3">{{
-          formObj.email
+        <el-descriptions-item label="数量">{{
+          formObj.num
         }}</el-descriptions-item>
-        <el-descriptions-item label="p4">{{
-          formObj.role
+        <el-descriptions-item label="买家名称">{{
+          formObj.buyer_name
         }}</el-descriptions-item>
-        <el-descriptions-item label="p5">{{
-          formObj.date
+        <el-descriptions-item label="品类">{{
+          formObj.product_type
         }}</el-descriptions-item>
+        <el-descriptions-item label="订单编号">{{
+          formObj.order_code
+        }}</el-descriptions-item>
+        <el-descriptions-item label="真实商品链接">{{
+          formObj.real_product_url
+        }}</el-descriptions-item>
+        <el-descriptions-item label="订单状态">{{
+          formObj.status
+        }}</el-descriptions-item>
+        <el-descriptions-item label="ASIN">{{
+          formObj.asin
+        }}</el-descriptions-item>
+        <el-descriptions-item label="SKU">{{
+          formObj.sku
+        }}</el-descriptions-item>
+        <el-descriptions-item label="买家选项">{{
+          formObj.buyer_selection
+        }}</el-descriptions-item>
+        <el-descriptions-item label="是否企业买家"
+          >{{ formObj.is_business }}
+          <!--  todo 格式转换 dictFormat(value,dictList) -->
+        </el-descriptions-item>
+        <el-descriptions-item label="发布时间">{{
+          moment(formObj.publish_time).format('YYYY-MM-DD HH:mm:ss')
+        }}</el-descriptions-item>
+        <el-descriptions-item label="角色"
+          >{{ formObj.role }}
+          <!--  todo 格式转换 dictFormat(value,dictList) -->
+        </el-descriptions-item>
+        <el-descriptions-item label="发布人">{{
+          formObj.publisher
+        }}</el-descriptions-item>
+        <el-descriptions-item label="表示串">{{
+          formObj.mark_str
+        }}</el-descriptions-item>
+        <el-descriptions-item label="模板文件">{{
+          formObj.template_file
+        }}</el-descriptions-item>
+        <el-descriptions-item label="显示"
+          >{{ formObj.show }}
+          <!--  todo 格式转换 dictFormat(value,dictList) -->
+        </el-descriptions-item>
+        <el-descriptions-item label="点击次数">{{
+          formObj.click_count
+        }}</el-descriptions-item>
+        <el-descriptions-item label="SEO标题">{{
+          formObj.seo_title
+        }}</el-descriptions-item>
+        <el-descriptions-item label="SEO关键字">{{
+          formObj.seo_keyword
+        }}</el-descriptions-item>
+        <el-descriptions-item label="SEO描述">{{
+          formObj.seo_description
+        }}</el-descriptions-item>
+        <el-descriptions-item label="静态页面模式"
+          >{{ formObj.static_page_model }}
+          <!--  todo 格式转换 dictFormat(value,dictList) -->
+        </el-descriptions-item>
       </el-descriptions>
     </template>
-    <!-- 表单  添加或编辑 -->
-    <template v-else-if="drawFlag === 1"
-      ><el-form
+    <!-- 表单  编辑 -->
+    <template v-else-if="drawFlag === 1">
+      <!-- todo 图片上传 -->
+      <div class="img-upload">
+        <div class="img-title">图片</div>
+        <div class="img-btns">
+          <el-button @click="viewImg('imgUrltodo')" type="primary"
+            >查看图片</el-button
+          >
+          <el-button @click="openUploadDialog" type="success"
+            >上传图片 todo 更改formObj.picture_id</el-button
+          >
+        </div>
+      </div>
+
+      <el-form
         ref="formRef"
-        style="max-width: 600px"
+        style="max-width: 800px"
         :model="formObj"
         :rules="rules"
         label-width="auto"
         status-icon
       >
-        <el-form-item label="账号" prop="account">
-          <el-input v-model="formObj.account" />
+        <el-form-item label="商品名称" prop="product_name">
+          <el-input v-model="formObj.product_name" />
+        </el-form-item>
+        <el-form-item label="图片id" prop="picture_id">
+          <el-input v-model="formObj.picture_id" disabled />
         </el-form-item>
 
-        <el-form-item label="订单名" prop="name">
-          <el-input v-model="formObj.name" />
+        <el-form-item label="主分类" prop="main_type">
+          <el-select
+            v-model="formObj.main_type"
+            clearable
+            placeholder="选择主分类"
+          >
+            <el-option
+              v-for="item in main_type_dict"
+              :key="item.id"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
         </el-form-item>
-        <el-form-item label="手机号" prop="phone">
-          <el-input v-model="formObj.phone" />
+        <el-form-item label="价格" prop="price">
+          <el-input v-model="formObj.price" />
         </el-form-item>
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="formObj.email" />
+        <el-form-item label="数量" prop="num">
+          <el-input v-model="formObj.num" />
+        </el-form-item>
+        <el-form-item label="买家名称" prop="buyer_name">
+          <el-input v-model="formObj.buyer_name" />
+        </el-form-item>
+        <el-form-item label="品类" prop="product_type">
+          <el-input v-model="formObj.product_type" />
+        </el-form-item>
+        <el-form-item label="订单编号" prop="order_code">
+          <el-input v-model="formObj.order_code" />
+        </el-form-item>
+
+        <el-form-item label="真实商品链接" prop="real_product_url">
+          <el-input v-model="formObj.real_product_url" />
+        </el-form-item>
+        <el-form-item label="订单状态" prop="status">
+          <!-- todo -->
+          <el-input v-model="formObj.status" />
+        </el-form-item>
+        <el-form-item label="ASIN" prop="asin">
+          <el-input v-model="formObj.asin" />
+        </el-form-item>
+        <el-form-item label="SKU" prop="sku">
+          <el-input v-model="formObj.sku" />
+        </el-form-item>
+        <el-form-item label="买家选项" prop="buyer_selection">
+          <el-input v-model="formObj.buyer_selection" />
+        </el-form-item>
+        <el-form-item label="是否企业买家" prop="is_business">
+          <el-select
+            v-model="formObj.is_business"
+            clearable
+            placeholder="是否企业买家"
+          >
+            <el-option
+              v-for="item in is_business_dict"
+              :key="item.id"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="发布时间" prop="publish_time">
+          <el-date-picker
+            v-model="formObj.publish_time"
+            type="datetime"
+            placeholder="选择发布时间"
+            :shortcuts="shortcuts"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="角色" prop="role">
+          <el-select v-model="formObj.role" clearable placeholder="选择角色">
+            <el-option
+              v-for="item in role_dict"
+              :key="item.id"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="发布人" prop="publisher">
+          <el-input v-model="formObj.publisher" />
+        </el-form-item>
+        <el-form-item label="表示串" prop="mark_str">
+          <el-input v-model="formObj.mark_str" />
+        </el-form-item>
+        <el-form-item label="模板文件" prop="template_file">
+          <el-input v-model="formObj.template_file" />
+        </el-form-item>
+        <el-form-item label="显示" prop="show">
+          <el-select v-model="formObj.show" clearable placeholder="是否显示">
+            <el-option
+              v-for="item in show_dict"
+              :key="item.id"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="点击次数" prop="click_count">
+          <el-input v-model="formObj.click_count" />
+        </el-form-item>
+        <el-form-item label="SEO标题" prop="seo_title">
+          <el-input v-model="formObj.seo_title" />
+        </el-form-item>
+        <el-form-item label="SEO关键字" prop="seo_keyword">
+          <el-input v-model="formObj.seo_keyword" />
+        </el-form-item>
+        <el-form-item label="SEO描述" prop="seo_description">
+          <el-input v-model="formObj.seo_description" />
+        </el-form-item>
+        <el-form-item label="静态页面模式" prop="static_page_model">
+          <el-select
+            v-model="formObj.static_page_model"
+            clearable
+            placeholder="选择静态页面模式"
+          >
+            <el-option
+              v-for="item in static_page_model_dict"
+              :key="item.id"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
         </el-form-item>
 
         <el-form-item>
@@ -543,12 +1038,12 @@ const statusChange = (status: boolean = false, id: number = 0) => {
             <div></div>
             <div>
               <el-button type="primary" @click="editForm(formRef)">
-                修改
+                修改订单
               </el-button>
             </div>
             <div>
               <el-button type="danger" @click="resetForm(formRef)">
-                重置
+                重置输入
               </el-button>
             </div>
             <div></div>
@@ -566,26 +1061,100 @@ const statusChange = (status: boolean = false, id: number = 0) => {
     :before-close="handleClose"
     ><el-form
       ref="addFormRef"
-      style="max-width: 600px"
+      style="max-width: 800px"
       :model="addFormObj"
       :rules="rules"
       label-width="auto"
       status-icon
+      class="form"
     >
-      <el-form-item label="账号" prop="account">
-        <el-input v-model="addFormObj.account" />
+      <el-form-item label="商品名称" prop="product_name" class="form_item">
+        <el-input v-model="formObj.product_name" />
+      </el-form-item>
+      <el-form-item label="主分类" prop="main_type" class="form_item">
+        <el-input v-model="formObj.main_type" />
+      </el-form-item>
+      <el-form-item label="价格" prop="price" class="form_item">
+        <el-input v-model="formObj.price" />
+      </el-form-item>
+      <el-form-item label="数量" prop="num" class="form_item">
+        <el-input v-model="formObj.num" />
+      </el-form-item>
+      <el-form-item label="买家名称" prop="buyer_name" class="form_item">
+        <el-input v-model="formObj.buyer_name" />
+      </el-form-item>
+      <el-form-item label="品类" prop="product_type" class="form_item">
+        <el-input v-model="formObj.product_type" />
+      </el-form-item>
+      <el-form-item label="订单编号" prop="order_code" class="form_item">
+        <el-input v-model="formObj.order_code" />
       </el-form-item>
 
-      <el-form-item label="订单名" prop="name">
-        <el-input v-model="addFormObj.name" />
+      <el-form-item
+        label="真实商品链接"
+        prop="real_product_url"
+        class="form_item"
+      >
+        <el-input v-model="formObj.real_product_url" />
       </el-form-item>
-      <el-form-item label="手机号" prop="phone">
-        <el-input v-model="addFormObj.phone" />
+      <el-form-item label="订单状态" prop="status" class="form_item">
+        <el-input v-model="formObj.status" />
       </el-form-item>
-      <el-form-item label="邮箱" prop="email">
-        <el-input v-model="addFormObj.email" />
+      <el-form-item label="ASIN" prop="asin" class="form_item">
+        <el-input v-model="formObj.asin" />
+      </el-form-item>
+      <el-form-item label="SKU" prop="sku" class="form_item">
+        <el-input v-model="formObj.sku" />
+      </el-form-item>
+      <el-form-item label="买家选项" prop="buyer_selection" class="form_item">
+        <el-input v-model="formObj.buyer_selection" />
+      </el-form-item>
+      <el-form-item label="是否企业买家" prop="is_business" class="form_item">
+        <el-input v-model="formObj.is_business" />
+      </el-form-item>
+      <el-form-item label="发布时间" prop="publish_time" class="form_item">
+        <el-input v-model="formObj.publish_time" />
+      </el-form-item>
+      <el-form-item label="角色" prop="role" class="form_item">
+        <el-input v-model="formObj.role" />
+      </el-form-item>
+      <el-form-item label="发布人" prop="publisher" class="form_item">
+        <el-input v-model="formObj.publisher" />
+      </el-form-item>
+      <el-form-item label="表示串" prop="mark_str" class="form_item">
+        <el-input v-model="formObj.mark_str" />
+      </el-form-item>
+      <el-form-item label="模板文件" prop="template_file" class="form_item">
+        <el-input v-model="formObj.template_file" />
+      </el-form-item>
+      <el-form-item label="显示" prop="show" class="form_item">
+        <el-input v-model="formObj.show" />
+      </el-form-item>
+      <el-form-item label="点击次数" prop="click_count" class="form_item">
+        <el-input v-model="formObj.click_count" />
+      </el-form-item>
+      <el-form-item label="SEO标题" prop="seo_title" class="form_item">
+        <el-input v-model="formObj.seo_title" />
+      </el-form-item>
+      <el-form-item label="SEO关键字" prop="seo_keyword" class="form_item">
+        <el-input v-model="formObj.seo_keyword" />
+      </el-form-item>
+      <el-form-item label="SEO描述" prop="seo_description" class="form_item">
+        <el-input v-model="formObj.seo_description" />
+      </el-form-item>
+      <el-form-item
+        label="静态页面模式"
+        prop="static_page_model"
+        class="form_item"
+      >
+        <el-input v-model="formObj.static_page_model" />
       </el-form-item>
 
+      <el-form-item label="图片ID" prop="picture_id" class="form_item">
+        <el-input v-model="formObj.picture_id" />
+        <!-- 上传 按钮 todo-->
+        <!-- 预览 按钮 todo-->
+      </el-form-item>
       <el-form-item>
         <div class="pwd-btns">
           <div></div>
@@ -604,6 +1173,11 @@ const statusChange = (status: boolean = false, id: number = 0) => {
       </el-form-item>
     </el-form>
   </el-dialog>
+
+  <!-- 图片查看/预览dialog -->
+  <el-dialog w-full v-model="imgDialogVisibel"
+    ><img :src="productImgUrl"
+  /></el-dialog>
 </template>
 
 <style scoped lang="less">
@@ -644,5 +1218,27 @@ const statusChange = (status: boolean = false, id: number = 0) => {
 }
 .btns-item {
   padding: 0 5px;
+}
+.form {
+  margin: 50px auto 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  .form_item {
+    width: 50%;
+    padding: 0 20px;
+  }
+}
+.img-upload {
+  display: flex;
+
+  .img-btns {
+    padding: 0 0 10px;
+  }
+  .img-title {
+    padding: 0 30px 10px 40px;
+    text-align: right;
+    line-height: 42px;
+  }
 }
 </style>

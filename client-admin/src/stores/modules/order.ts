@@ -1,13 +1,31 @@
 import { defineStore } from 'pinia'
 interface Order {
   id: number
-  name: string
-  status: boolean
-  account: string
-  phone: string
-  email: string
-  role: string
-  date: string
+  main_type: number
+  price: string
+  num: number
+  buyer_name: string
+  product_type: string
+  order_code: string
+  picture_id: number
+  real_product_url: string
+  status: string
+  product_name: string
+  asin: string
+  sku: string
+  buyer_selection: string
+  is_business: number
+  publish_time: Date
+  role: number
+  publisher: string
+  mark_str: string
+  template_file: string
+  show: number
+  click_count: number
+  seo_title: string
+  seo_keyword: string
+  seo_description: string
+  static_page_model: number
 }
 export const useOrderStore = defineStore(
   'order',
@@ -15,13 +33,31 @@ export const useOrderStore = defineStore(
     const orderMap = new Map<number, Order>()
     const order: Order = {
       id: 0,
-      name: '',
-      status: false,
-      account: '',
-      phone: '',
-      email: '',
-      role: '',
-      date: ''
+      main_type: 0,
+      price: '',
+      num: 0,
+      buyer_name: '',
+      product_type: '',
+      order_code: '',
+      picture_id: 0,
+      real_product_url: '',
+      status: '',
+      product_name: '',
+      asin: '',
+      sku: '',
+      buyer_selection: '',
+      is_business: 0,
+      publish_time: new Date(),
+      role: 0,
+      publisher: '',
+      mark_str: '',
+      template_file: '',
+      show: 0,
+      click_count: 0,
+      seo_title: '',
+      seo_keyword: '',
+      seo_description: '',
+      static_page_model: 0
     }
     orderMap.set(0, order)
 

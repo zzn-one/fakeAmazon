@@ -1,20 +1,27 @@
 <script setup lang="ts">
 import { ref, watch, reactive } from 'vue'
 import _ from 'lodash'
+import moment from 'moment'
 
 const title = '用户管理'
-
+interface User {
+  id: number
+  name: string
+  username: string
+  role: string
+  password: string
+  create_time: Date
+}
 //批量按钮操作----------------------------
 //添加按钮todo
 const addItem = () => {
   const newUser = ref<User>({
-    uid: 0,
+    id: 0,
     name: '',
-    account: '',
-    phone: '',
-    email: '',
+    username: '',
     role: '',
-    date: ''
+    password: '',
+    create_time: new Date()
   })
   toggleDrawer(newUser.value, 2, '添加用户')
 }
@@ -58,52 +65,48 @@ const batchDel = () => {
 }
 
 //table表格----------------------------------------------
-interface User {
-  uid: number
-  name: string
-  account: string
-  phone: string
-  email: string
-  role: string
-  date: string
-}
+
 const tableData = ref<User[]>([
   //生成假数据
   {
-    uid: 1,
+    id: 1,
     name: '张三',
-    account: 'zhangsan',
-    phone: '13812345678',
-    email: 'zhangsan@qq.com',
+    username: 'zhangsan',
     role: '管理员',
-    date: '2023-04-12'
+    password: '123456',
+    create_time: new Date()
   },
   {
-    uid: 2,
+    id: 2,
     name: '李四',
-    account: 'lisi',
-    phone: '13812345678',
-    email: 'lisi@qq.com',
+    username: 'lisi',
     role: '普通用户',
-    date: '2023-04-12'
+    password: '123456',
+    create_time: new Date()
   },
   {
-    uid: 3,
+    id: 3,
     name: '王五',
-    account: 'wangwu',
-    phone: '13812345678',
-    email: 'wangwu@qq.com',
+    username: 'wangwu',
     role: '普通用户',
-    date: '2023-04-12'
+    password: '123456',
+    create_time: new Date()
   },
   {
-    uid: 4,
+    id: 4,
     name: '赵六',
-    account: 'zhaoliu',
-    phone: '13812345678',
-    email: 'zhaoliu@qq.com',
+    username: 'zhaoliu',
     role: '普通用户',
-    date: '2023-04-12'
+    password: '123456',
+    create_time: new Date()
+  },
+  {
+    id: 5,
+    name: '钱七',
+    username: 'qianqi',
+    role: '普通用户',
+    password: '123456',
+    create_time: new Date()
   }
 ])
 //查看按钮操作
@@ -143,6 +146,10 @@ const delItem = (row: User) => {
         grouping: true
       })
     })
+}
+//重置密码按钮todo
+const resetPassword = (row: User) => {
+  console.log(row)
 }
 //序号
 const indexMethod = (index: number) => {
@@ -198,13 +205,13 @@ const rules = reactive<FormRules<User>>({
     { required: true, message: '请输入用户名', trigger: 'blur' },
     { min: 1, message: '用户名不能为空', trigger: 'blur' }
   ],
-  phone: [
-    { required: true, message: '请输入手机号', trigger: 'blur' },
-    { min: 11, max: 11, message: '手机号格式错误', trigger: 'blur' }
+  username: [
+    { required: true, message: '请输入账号', trigger: 'blur' },
+    { min: 1, message: '账号不能为空', trigger: 'blur' }
   ],
-  email: [
-    { required: true, message: '请输入邮箱', trigger: 'blur' },
-    { min: 1, message: '邮箱不能为空', trigger: 'blur' }
+  role: [
+    { required: true, message: '请输入身份', trigger: 'blur' },
+    { min: 1, message: '身份不能为空', trigger: 'blur' }
   ]
 })
 //表单  新增用户 todo
@@ -307,26 +314,27 @@ const resetForm = (formEl: FormInstance | undefined) => {
           :index="indexMethod"
           width="80"
         />
-        <el-table-column label="Date">
-          <template #default="scope">{{ scope.row.date }}</template>
+        <el-table-column label="账号" property="username" />
+        <el-table-column property="name" label="用户名" />
+        <el-table-column label="创建时间" show-overflow-tooltip>
+          <template #default="scope">{{
+            moment(scope.row.create_time).format('YYYY-MM-DD HH:mm:ss')
+          }}</template>
         </el-table-column>
-        <el-table-column property="name" label="Name" />
-        <el-table-column
-          property="address"
-          label="Address"
-          show-overflow-tooltip
-        />
-        <el-table-column label="操作" width="240" min-width="240"
+
+        <el-table-column label="操作" width="400" min-width="400"
           ><template #default="scope">
             <el-button type="success" @click="viewItem(scope.row)"
               >查看</el-button
             >
-
             <el-button type="primary" @click="editItem(scope.row)"
               >编辑</el-button
             >
             <el-button type="danger" @click="delItem(scope.row)"
               >删除</el-button
+            >
+            <el-button type="warning" @click="resetPassword(scope.row)"
+              >重置密码</el-button
             >
           </template>
         </el-table-column>
@@ -353,20 +361,20 @@ const resetForm = (formEl: FormInstance | undefined) => {
   >
     <template v-if="drawFlag === 0">
       <el-descriptions :title="formObj.name" border :column="1" size="large">
-        <el-descriptions-item label="p1">{{
-          formObj.account
+        <el-descriptions-item label="用户名">{{
+          formObj.name
         }}</el-descriptions-item>
-        <el-descriptions-item label="p2">{{
-          formObj.phone
+        <el-descriptions-item label="账号">{{
+          formObj.username
         }}</el-descriptions-item>
-        <el-descriptions-item label="p3">{{
-          formObj.email
-        }}</el-descriptions-item>
-        <el-descriptions-item label="p4">{{
+        <!-- <el-descriptions-item label="密码">{{
+          formObj.password
+        }}</el-descriptions-item> -->
+        <el-descriptions-item label="角色">{{
           formObj.role
         }}</el-descriptions-item>
-        <el-descriptions-item label="p5">{{
-          formObj.date
+        <el-descriptions-item label="创建时间">{{
+          moment(formObj.create_time).format('YYYY-MM-DD HH:mm:ss')
         }}</el-descriptions-item>
       </el-descriptions>
     </template>
@@ -380,18 +388,15 @@ const resetForm = (formEl: FormInstance | undefined) => {
         label-width="auto"
         status-icon
       >
-        <el-form-item label="账号" prop="account">
-          <el-input v-model="formObj.account" />
+        <el-form-item label="账号" prop="username">
+          <el-input v-model="formObj.username" />
         </el-form-item>
 
         <el-form-item label="用户名" prop="name">
           <el-input v-model="formObj.name" />
         </el-form-item>
-        <el-form-item label="手机号" prop="phone">
-          <el-input v-model="formObj.phone" />
-        </el-form-item>
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="formObj.email" />
+        <el-form-item label="身份" prop="role">
+          <el-input v-model="formObj.role" />
         </el-form-item>
 
         <el-form-item>
@@ -403,15 +408,15 @@ const resetForm = (formEl: FormInstance | undefined) => {
                 type="primary"
                 @click="editForm(formRef)"
               >
-                修改
+                确认修改
               </el-button>
               <el-button v-else type="success" @click="addForm(formRef)">
-                新增
+                新增用户
               </el-button>
             </div>
             <div>
               <el-button type="danger" @click="resetForm(formRef)">
-                重置
+                重置输入
               </el-button>
             </div>
             <div></div>
