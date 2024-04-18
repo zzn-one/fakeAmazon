@@ -41,6 +41,13 @@ interface Dict {
   type?: number
   description?: string
 }
+interface Picture {
+  id: number
+  name?: string
+  url: string
+  create_time?: Date
+  delete_flag?: number
+}
 //字典显示格式转换
 const dictFormat = (value: number, dictList: Dict[]) => {
   let label = ''
@@ -418,7 +425,7 @@ const toggleDrawer = (row: Order, flag: number = 0, title: string) => {
   drawerVisible.value = true
 }
 //编辑表单---------------------------------
-import { type FormInstance, type FormRules } from 'element-plus'
+import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 
 const formRef = ref<FormInstance>()
 //todo  rule规则
@@ -538,13 +545,102 @@ const viewImg = (imgUrl: string) => {
   imgDialogVisibel.value = true
 }
 //上传图片dialog ------------------------------------------------------------------------------
+
 //上传图片按钮点击事件
-const uploadDialogVisibel = ref(false)
+const uploadDialogVisible = ref(false)
 const openUploadDialog = () => {
   //  打开 上传图片dialog
-  uploadDialogVisibel.value = true
+  uploadDialogVisible.value = true
+}
+import { genFileId } from 'element-plus'
+import type { UploadInstance, UploadProps, UploadRawFile } from 'element-plus'
+//todo
+const uploadUrl = 'https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15'
+const upload = ref<UploadInstance>()
+//替换旧文件
+const handleExceed: UploadProps['onExceed'] = (files) => {
+  upload.value!.clearFiles()
+  const file = files[0] as UploadRawFile
+  file.uid = genFileId()
+  upload.value!.handleStart(file)
+}
+//上传成功 设置picture_id todo
+const handleSuccess = (response: any, file: any, fileList: any) => {
+  //设置picture_id
+  console.log('上传成功')
+  formObj.value.picture_id = response.data.id
+  ElMessage({
+    message: '图片上传成功！',
+    type: 'success',
+    grouping: true
+  })
+
+  //关闭dialog
+  uploadDialogVisible.value = false
+} //上传失败
+const handleError = (err: any, file: any, fileList: any) => {
+  console.log('上传失败')
+  ElMessage({
+    message: '图片上传失败！',
+    type: 'error',
+    grouping: true
+  })
 }
 
+//手动上传
+const submitUpload = () => {
+  console.log('提交上传')
+  upload.value!.submit()
+}
+//更改formObj.value.picture_id
+const tempImgId = ref(0)
+
+const changeImgId = () => {
+  formObj.value.picture_id = tempImgId.value
+  ElMessage({
+    message: '图片更换成功！请确认提交订单',
+    type: 'success',
+    grouping: true
+  })
+  //关闭dialog
+  uploadDialogVisible.value = false
+}
+
+//todo 发送请求获取历史图片列表
+const imgList: Picture[] = [
+  {
+    id: 0,
+    url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
+  },
+  {
+    id: 1,
+    url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
+  },
+  {
+    id: 2,
+    url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
+  },
+  {
+    id: 3,
+    url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
+  },
+  {
+    id: 4,
+    url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
+  },
+  {
+    id: 5,
+    url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
+  },
+  {
+    id: 6,
+    url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
+  },
+  {
+    id: 7,
+    url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
+  }
+]
 //todo 发送请求获取多个dict
 //主分类
 const main_type_dict: Dict[] = [
@@ -888,11 +984,11 @@ const shortcuts = [
             >查看图片</el-button
           >
           <el-button @click="openUploadDialog" type="success"
-            >上传图片 todo 更改formObj.picture_id</el-button
+            >上传图片</el-button
           >
         </div>
       </div>
-
+      <!-- 编辑表单 -->
       <el-form
         ref="formRef"
         style="max-width: 800px"
@@ -1059,7 +1155,17 @@ const shortcuts = [
     fullscreen
     center
     :before-close="handleClose"
-    ><el-form
+  >
+    <div class="img-upload img-upload-add">
+      <div class="img-title">图片</div>
+      <div class="img-btns">
+        <el-button @click="viewImg('imgUrltodo')" type="primary"
+          >查看图片</el-button
+        >
+        <el-button @click="openUploadDialog" type="success">上传图片</el-button>
+      </div>
+    </div>
+    <el-form
       ref="addFormRef"
       style="max-width: 800px"
       :model="addFormObj"
@@ -1069,25 +1175,40 @@ const shortcuts = [
       class="form"
     >
       <el-form-item label="商品名称" prop="product_name" class="form_item">
-        <el-input v-model="formObj.product_name" />
+        <el-input v-model="addFormObj.product_name" />
       </el-form-item>
+      <el-form-item label="图片id" prop="picture_id" class="form_item">
+        <el-input v-model="addFormObj.picture_id" disabled />
+      </el-form-item>
+
       <el-form-item label="主分类" prop="main_type" class="form_item">
-        <el-input v-model="formObj.main_type" />
+        <el-select
+          v-model="addFormObj.main_type"
+          clearable
+          placeholder="选择主分类"
+        >
+          <el-option
+            v-for="item in main_type_dict"
+            :key="item.id"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item label="价格" prop="price" class="form_item">
-        <el-input v-model="formObj.price" />
+        <el-input v-model="addFormObj.price" />
       </el-form-item>
       <el-form-item label="数量" prop="num" class="form_item">
-        <el-input v-model="formObj.num" />
+        <el-input v-model="addFormObj.num" />
       </el-form-item>
       <el-form-item label="买家名称" prop="buyer_name" class="form_item">
-        <el-input v-model="formObj.buyer_name" />
+        <el-input v-model="addFormObj.buyer_name" />
       </el-form-item>
       <el-form-item label="品类" prop="product_type" class="form_item">
-        <el-input v-model="formObj.product_type" />
+        <el-input v-model="addFormObj.product_type" />
       </el-form-item>
       <el-form-item label="订单编号" prop="order_code" class="form_item">
-        <el-input v-model="formObj.order_code" />
+        <el-input v-model="addFormObj.order_code" />
       </el-form-item>
 
       <el-form-item
@@ -1095,65 +1216,102 @@ const shortcuts = [
         prop="real_product_url"
         class="form_item"
       >
-        <el-input v-model="formObj.real_product_url" />
+        <el-input v-model="addFormObj.real_product_url" />
       </el-form-item>
       <el-form-item label="订单状态" prop="status" class="form_item">
-        <el-input v-model="formObj.status" />
+        <!-- todo -->
+        <el-input v-model="addFormObj.status" />
       </el-form-item>
       <el-form-item label="ASIN" prop="asin" class="form_item">
-        <el-input v-model="formObj.asin" />
+        <el-input v-model="addFormObj.asin" />
       </el-form-item>
       <el-form-item label="SKU" prop="sku" class="form_item">
-        <el-input v-model="formObj.sku" />
+        <el-input v-model="addFormObj.sku" />
       </el-form-item>
       <el-form-item label="买家选项" prop="buyer_selection" class="form_item">
-        <el-input v-model="formObj.buyer_selection" />
+        <el-input v-model="addFormObj.buyer_selection" />
       </el-form-item>
       <el-form-item label="是否企业买家" prop="is_business" class="form_item">
-        <el-input v-model="formObj.is_business" />
+        <el-select
+          v-model="addFormObj.is_business"
+          clearable
+          placeholder="是否企业买家"
+        >
+          <el-option
+            v-for="item in is_business_dict"
+            :key="item.id"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item label="发布时间" prop="publish_time" class="form_item">
-        <el-input v-model="formObj.publish_time" />
+        <el-date-picker
+          v-model="addFormObj.publish_time"
+          type="datetime"
+          placeholder="选择发布时间"
+          :shortcuts="shortcuts"
+          style="width: 100%"
+        />
       </el-form-item>
       <el-form-item label="角色" prop="role" class="form_item">
-        <el-input v-model="formObj.role" />
+        <el-select v-model="addFormObj.role" clearable placeholder="选择角色">
+          <el-option
+            v-for="item in role_dict"
+            :key="item.id"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item label="发布人" prop="publisher" class="form_item">
-        <el-input v-model="formObj.publisher" />
+        <el-input v-model="addFormObj.publisher" />
       </el-form-item>
       <el-form-item label="表示串" prop="mark_str" class="form_item">
-        <el-input v-model="formObj.mark_str" />
+        <el-input v-model="addFormObj.mark_str" />
       </el-form-item>
       <el-form-item label="模板文件" prop="template_file" class="form_item">
-        <el-input v-model="formObj.template_file" />
+        <el-input v-model="addFormObj.template_file" />
       </el-form-item>
       <el-form-item label="显示" prop="show" class="form_item">
-        <el-input v-model="formObj.show" />
+        <el-select v-model="addFormObj.show" clearable placeholder="是否显示">
+          <el-option
+            v-for="item in show_dict"
+            :key="item.id"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item label="点击次数" prop="click_count" class="form_item">
-        <el-input v-model="formObj.click_count" />
+        <el-input v-model="addFormObj.click_count" />
       </el-form-item>
       <el-form-item label="SEO标题" prop="seo_title" class="form_item">
-        <el-input v-model="formObj.seo_title" />
+        <el-input v-model="addFormObj.seo_title" />
       </el-form-item>
       <el-form-item label="SEO关键字" prop="seo_keyword" class="form_item">
-        <el-input v-model="formObj.seo_keyword" />
+        <el-input v-model="addFormObj.seo_keyword" />
       </el-form-item>
       <el-form-item label="SEO描述" prop="seo_description" class="form_item">
-        <el-input v-model="formObj.seo_description" />
+        <el-input v-model="addFormObj.seo_description" />
       </el-form-item>
       <el-form-item
         label="静态页面模式"
         prop="static_page_model"
         class="form_item"
       >
-        <el-input v-model="formObj.static_page_model" />
-      </el-form-item>
-
-      <el-form-item label="图片ID" prop="picture_id" class="form_item">
-        <el-input v-model="formObj.picture_id" />
-        <!-- 上传 按钮 todo-->
-        <!-- 预览 按钮 todo-->
+        <el-select
+          v-model="addFormObj.static_page_model"
+          clearable
+          placeholder="选择静态页面模式"
+        >
+          <el-option
+            v-for="item in static_page_model_dict"
+            :key="item.id"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item>
         <div class="pwd-btns">
@@ -1178,6 +1336,47 @@ const shortcuts = [
   <el-dialog w-full v-model="imgDialogVisibel"
     ><img :src="productImgUrl"
   /></el-dialog>
+  <!-- 图片上传dialog -->
+  <el-dialog v-model="uploadDialogVisible" title="图片上传" width="1000px">
+    <div class="upload-btn">
+      <el-upload
+        ref="upload"
+        :action="uploadUrl"
+        :limit="1"
+        :on-exceed="handleExceed"
+        :on-success="handleSuccess"
+        :on-error="handleError"
+        :auto-upload="false"
+      >
+        <template #trigger>
+          <el-button type="primary">本地上传</el-button>
+        </template>
+        <el-button class="submit-btn" type="success" @click="submitUpload">
+          确认上传
+        </el-button>
+      </el-upload>
+    </div>
+    <div class="history-imgs">
+      <div class="img-items">
+        <!-- todo -->
+        <el-radio-group v-model="tempImgId">
+          <el-radio
+            class="radio-item"
+            v-for="item in imgList"
+            :key="item.id"
+            :value="item.id"
+            ><img :src="item.url"
+          /></el-radio>
+        </el-radio-group>
+      </div>
+    </div>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button type="primary" @click="changeImgId"> 选择 </el-button>
+        <el-button @click="uploadDialogVisible = false">关闭</el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
 <style scoped lang="less">
@@ -1220,7 +1419,7 @@ const shortcuts = [
   padding: 0 5px;
 }
 .form {
-  margin: 50px auto 0;
+  margin: 20px auto 0;
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
@@ -1237,6 +1436,43 @@ const shortcuts = [
   }
   .img-title {
     padding: 0 30px 10px 40px;
+    text-align: right;
+    line-height: 42px;
+  }
+}
+.upload-btn {
+  padding: 10px 20px;
+  .submit-btn {
+    margin: 0 10px 0;
+  }
+}
+.history-imgs {
+  width: 980px;
+  height: 680px;
+  overflow: auto;
+}
+.radio-item {
+  width: 300px;
+  height: 300px;
+  margin: 20px 20px 0 0;
+  padding: 0 20px 0 0;
+  border: 1px solid #ccc;
+
+  img {
+    width: 100%;
+    height: 100%;
+  }
+}
+.img-upload-add {
+  margin: 50px auto 0;
+  width: 760px;
+  display: flex;
+
+  .img-btns {
+    padding: 0 0 10px;
+  }
+  .img-title {
+    padding: 0 30px 0 40px;
     text-align: right;
     line-height: 42px;
   }
